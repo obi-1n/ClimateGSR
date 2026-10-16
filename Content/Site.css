@@ -18,3 +18,33 @@ select,
 textarea {
     max-width: 280px;
 }
+
+/* Login page styling */
+.login-page {
+    background: linear-gradient(135deg, #f4fbff 0%, #eaf6f1 100%);
+    padding: 40px 0;
+}
+
+.login-card {
+    border: none;
+    border-radius: 12px;
+}
+
+.login-card .card-body {
+    padding: 2rem;
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+/* Make form controls larger and more appealing */
+.form-control-lg {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+/* Improve spacing on validation messages */
+.text-danger {
+    margin-top: .25rem;
+}
