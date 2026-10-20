@@ -9,7 +9,7 @@ using System.Web.Hosting;
 
 //CreateDatabaseIfNotExists
 //DropCreateDatabaseAlways
-public class DatabaseInitialiser : DropCreateDatabaseAlways<ClimateGSRDbContext>
+public class DatabaseInitialiser : CreateDatabaseIfNotExists<ClimateGSRDbContext>
 {
     protected override void Seed(ClimateGSRDbContext context)
     {
