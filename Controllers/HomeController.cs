@@ -155,7 +155,7 @@ namespace ClimateGSR.Controllers
 
                     string FormatTemperature(double temp)
                     {
-                        //if temperature is between -5 and +5, possible anomaly; otherwise average temp
+                        //if temperature is between -5 and +5, possible anomaly; otherwise average temp,
                         return $"{temp:N2} °C";
                     }
 
