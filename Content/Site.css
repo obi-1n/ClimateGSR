@@ -28,7 +28,7 @@ textarea {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2.5rem 1rem;
+    padding: 4rem 1rem;
     border-radius: 24px;
     margin-top: 1rem;
     margin-bottom: 2rem;
@@ -49,10 +49,12 @@ textarea {
     box-shadow: 0 20px 45px -10px rgba(27, 67, 50, 0.14), 0 8px 20px -5px rgba(27, 67, 50, 0.06);
     overflow: hidden;
     backdrop-filter: blur(10px);
+    position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .login-card:hover {
+    transform: translateY(-4px);
     box-shadow: 0 25px 50px -10px rgba(27, 67, 50, 0.18), 0 10px 25px -5px rgba(27, 67, 50, 0.08);
 }
 
@@ -90,7 +92,7 @@ textarea {
     color: #1b4332;
     font-weight: 800;
     letter-spacing: -0.5px;
-    font-size: 1.85rem;
+    font-size: 2rem;
     margin-bottom: 0.35rem;
 }
 
