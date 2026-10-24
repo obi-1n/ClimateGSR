@@ -10,6 +10,7 @@ using Microsoft.AspNet.Identity;
 
 namespace ClimateGSR.Models
 {
+    //
     public class ClimateGSRDbContext:IdentityDbContext<ApplicationUser>
     {
 
