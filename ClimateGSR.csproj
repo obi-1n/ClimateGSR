@@ -182,6 +182,7 @@
     <Compile Include="Models\Hint.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\Member.cs" />
     <Compile Include="Models\Question.cs" />
     <Compile Include="Models\QuestionGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

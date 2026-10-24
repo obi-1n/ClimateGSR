@@ -28,5 +28,7 @@ namespace ClimateGSR.Models
         public DbSet<Country> Countries { get; set; }
         public DbSet<Continent> Continents { get; set; }
 
+        public DbSet<Member> Members { get; set; }
+
     }
 }
