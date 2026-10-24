@@ -179,6 +179,7 @@
     <Compile Include="Models\Continent.cs" />
     <Compile Include="Models\Country.cs" />
     <Compile Include="Models\DatabaseInitialiser.cs" />
+    <Compile Include="Models\Game.cs" />
     <Compile Include="Models\Hint.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
