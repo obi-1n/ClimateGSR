@@ -8,8 +8,13 @@ namespace ClimateGSR.Models
     public class Game
     {
 
-        public int score {  get; set; }
-        public Question questions { get; set; }
+        public Game()
+        {
+            Questions = new List<Question>();
+        }
+
+        public int Score {  get; set; }
+        public List<Question> Questions { get; set; }
 
     }
 }
