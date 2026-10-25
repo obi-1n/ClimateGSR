@@ -12,47 +12,58 @@ using ClimateGSR.Models;
 
 namespace ClimateGSR.Controllers
 {
+    /// <summary>
+    /// Controller managing user authentication, registration, two-factor authentication,
+    /// external OAuth sign-in, and password recovery workflows.
+    /// </summary>
     [Authorize]
     public class AccountController : Controller
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
 
+        /// <summary>
+        /// Initializes a default instance of the <see cref="AccountController"/> class.
+        /// Dependencies are resolved lazily via the OWIN context.
+        /// </summary>
         public AccountController()
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AccountController"/> class with explicit dependencies.
+        /// </summary>
+        /// <param name="userManager">The application user manager instance.</param>
+        /// <param name="signInManager">The application sign-in manager instance.</param>
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
         }
 
+        /// <summary>
+        /// Gets the active <see cref="ApplicationSignInManager"/> instance from the OWIN context.
+        /// </summary>
         public ApplicationSignInManager SignInManager
         {
-            get
-            {
-                return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
-            }
-            private set 
-            { 
-                _signInManager = value; 
-            }
+            get { return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>(); }
+            private set { _signInManager = value; }
         }
 
+        /// <summary>
+        /// Gets the active <see cref="ApplicationUserManager"/> instance from the OWIN context.
+        /// </summary>
         public ApplicationUserManager UserManager
         {
-            get
-            {
-                return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            }
-            private set
-            {
-                _userManager = value;
-            }
+            get { return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>(); }
+            private set { _userManager = value; }
         }
 
-        //
+        /// <summary>
+        /// Displays the account login view.
+        /// </summary>
+        /// <param name="returnUrl">Optional URL to redirect the user after successful sign-in.</param>
+        /// <returns>The login view.</returns>
         // GET: /Account/Login
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
@@ -61,7 +72,12 @@ namespace ClimateGSR.Controllers
             return View();
         }
 
-        //
+        /// <summary>
+        /// Processes user credentials and signs the user in upon validation.
+        /// </summary>
+        /// <param name="model">Login form submission data containing email, password, and remember-me preference.</param>
+        /// <param name="returnUrl">Destination URL after authentication succeeds.</param>
+        /// <returns>Redirect result or view redisplay upon failure.</returns>
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
@@ -75,7 +91,8 @@ namespace ClimateGSR.Controllers
 
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, change to shouldLockout: true
-            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
+            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe,
+                shouldLockout: false);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -91,7 +108,13 @@ namespace ClimateGSR.Controllers
             }
         }
 
-        //
+        /// <summary>
+        /// Displays the view for entering two-factor authentication security codes.
+        /// </summary>
+        /// <param name="provider">The 2FA provider chosen (e.g. Phone or Email).</param>
+        /// <param name="returnUrl">Destination URL after verification succeeds.</param>
+        /// <param name="rememberMe">Whether to persist user session cookie.</param>
+        /// <returns>The verify code view.</returns>
         // GET: /Account/VerifyCode
         [AllowAnonymous]
         public async Task<ActionResult> VerifyCode(string provider, string returnUrl, bool rememberMe)
@@ -101,10 +124,16 @@ namespace ClimateGSR.Controllers
             {
                 return View("Error");
             }
-            return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
+
+            return View(new VerifyCodeViewModel
+                { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
         }
 
-        //
+        /// <summary>
+        /// Verifies a submitted two-factor authentication security code.
+        /// </summary>
+        /// <param name="model">Submitted verification code details.</param>
+        /// <returns>Redirect result or view redisplay on invalid code.</returns>
         // POST: /Account/VerifyCode
         [HttpPost]
         [AllowAnonymous]
@@ -120,7 +149,8 @@ namespace ClimateGSR.Controllers
             // If a user enters incorrect codes for a specified amount of time then the user account 
             // will be locked out for a specified amount of time. 
             // You can configure the account lockout settings in IdentityConfig
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent:  model.RememberMe, rememberBrowser: model.RememberBrowser);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code,
+                isPersistent: model.RememberMe, rememberBrowser: model.RememberBrowser);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -134,7 +164,10 @@ namespace ClimateGSR.Controllers
             }
         }
 
-        //
+        /// <summary>
+        /// Displays the user registration page.
+        /// </summary>
+        /// <returns>The register view.</returns>
         // GET: /Account/Register
         [AllowAnonymous]
         public ActionResult Register()
@@ -142,7 +175,11 @@ namespace ClimateGSR.Controllers
             return View();
         }
 
-        //
+        /// <summary>
+        /// Creates a new application user account and automatically signs in the user upon successful registration.
+        /// </summary>
+        /// <param name="model">Registration view model containing user name, email, and password.</param>
+        /// <returns>Redirect to Home/Index on success or redisplay of the form with errors.</returns>
         // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
@@ -151,12 +188,18 @@ namespace ClimateGSR.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    FirstName = model.FirstName?.Trim(),
+                    LastName = model.LastName?.Trim()
+                };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
@@ -165,6 +208,7 @@ namespace ClimateGSR.Controllers
 
                     return RedirectToAction("Index", "Home");
                 }
+
                 AddErrors(result);
             }
 
@@ -172,7 +216,12 @@ namespace ClimateGSR.Controllers
             return View(model);
         }
 
-        //
+        /// <summary>
+        /// Verifies a user's email address using a confirmation token.
+        /// </summary>
+        /// <param name="userId">The unique user ID.</param>
+        /// <param name="code">The email confirmation token.</param>
+        /// <returns>Confirmation view or error page.</returns>
         // GET: /Account/ConfirmEmail
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(string userId, string code)
@@ -181,11 +230,15 @@ namespace ClimateGSR.Controllers
             {
                 return View("Error");
             }
+
             var result = await UserManager.ConfirmEmailAsync(userId, code);
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
 
-        //
+        /// <summary>
+        /// Displays the forgot password request view.
+        /// </summary>
+        /// <returns>The forgot password view.</returns>
         // GET: /Account/ForgotPassword
         [AllowAnonymous]
         public ActionResult ForgotPassword()
@@ -193,7 +246,11 @@ namespace ClimateGSR.Controllers
             return View();
         }
 
-        //
+        /// <summary>
+        /// Initiates password reset for a registered user email.
+        /// </summary>
+        /// <param name="model">Submitted forgot password data.</param>
+        /// <returns>The confirmation view.</returns>
         // POST: /Account/ForgotPassword
         [HttpPost]
         [AllowAnonymous]
@@ -221,7 +278,10 @@ namespace ClimateGSR.Controllers
             return View(model);
         }
 
-        //
+        /// <summary>
+        /// Displays the confirmation view indicating that password reset instructions were sent.
+        /// </summary>
+        /// <returns>The forgot password confirmation view.</returns>
         // GET: /Account/ForgotPasswordConfirmation
         [AllowAnonymous]
         public ActionResult ForgotPasswordConfirmation()
@@ -229,7 +289,11 @@ namespace ClimateGSR.Controllers
             return View();
         }
 
-        //
+        /// <summary>
+        /// Displays the reset password entry form.
+        /// </summary>
+        /// <param name="code">Password reset token.</param>
+        /// <returns>The reset password view or error view if token is missing.</returns>
         // GET: /Account/ResetPassword
         [AllowAnonymous]
         public ActionResult ResetPassword(string code)
@@ -237,7 +301,11 @@ namespace ClimateGSR.Controllers
             return code == null ? View("Error") : View();
         }
 
-        //
+        /// <summary>
+        /// Resets the user's password using the provided security code and new password.
+        /// </summary>
+        /// <param name="model">Password reset details.</param>
+        /// <returns>Redirect to confirmation view or redisplay of the form with errors.</returns>
         // POST: /Account/ResetPassword
         [HttpPost]
         [AllowAnonymous]
@@ -248,22 +316,28 @@ namespace ClimateGSR.Controllers
             {
                 return View(model);
             }
+
             var user = await UserManager.FindByNameAsync(model.Email);
             if (user == null)
             {
                 // Don't reveal that the user does not exist
                 return RedirectToAction("ResetPasswordConfirmation", "Account");
             }
+
             var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
             if (result.Succeeded)
             {
                 return RedirectToAction("ResetPasswordConfirmation", "Account");
             }
+
             AddErrors(result);
             return View();
         }
 
-        //
+        /// <summary>
+        /// Displays confirmation that the password was reset successfully.
+        /// </summary>
+        /// <returns>The reset password confirmation view.</returns>
         // GET: /Account/ResetPasswordConfirmation
         [AllowAnonymous]
         public ActionResult ResetPasswordConfirmation()
@@ -271,7 +345,12 @@ namespace ClimateGSR.Controllers
             return View();
         }
 
-        //
+        /// <summary>
+        /// Challenges an external authentication provider (OAuth/OpenID) and initiates the external redirect.
+        /// </summary>
+        /// <param name="provider">The name of the external provider (e.g. Google, Facebook).</param>
+        /// <param name="returnUrl">URL to return to after login.</param>
+        /// <returns>A <see cref="ChallengeResult"/> targeting the external provider.</returns>
         // POST: /Account/ExternalLogin
         [HttpPost]
         [AllowAnonymous]
@@ -279,10 +358,16 @@ namespace ClimateGSR.Controllers
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
             // Request a redirect to the external login provider
-            return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
+            return new ChallengeResult(provider,
+                Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
 
-        //
+        /// <summary>
+        /// Displays the selection view for two-factor authentication delivery options.
+        /// </summary>
+        /// <param name="returnUrl">Destination URL.</param>
+        /// <param name="rememberMe">Remember me preference.</param>
+        /// <returns>The send code view.</returns>
         // GET: /Account/SendCode
         [AllowAnonymous]
         public async Task<ActionResult> SendCode(string returnUrl, bool rememberMe)
@@ -292,12 +377,19 @@ namespace ClimateGSR.Controllers
             {
                 return View("Error");
             }
+
             var userFactors = await UserManager.GetValidTwoFactorProvidersAsync(userId);
-            var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
-            return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
+            var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose })
+                .ToList();
+            return View(new SendCodeViewModel
+                { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
         }
 
-        //
+        /// <summary>
+        /// Generates and transmits a two-factor security token using the selected provider.
+        /// </summary>
+        /// <param name="model">Selection details.</param>
+        /// <returns>Redirect to VerifyCode view or Error view on failure.</returns>
         // POST: /Account/SendCode
         [HttpPost]
         [AllowAnonymous]
@@ -314,10 +406,16 @@ namespace ClimateGSR.Controllers
             {
                 return View("Error");
             }
-            return RedirectToAction("VerifyCode", new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
+
+            return RedirectToAction("VerifyCode",
+                new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
         }
 
-        //
+        /// <summary>
+        /// Callback action called by the external provider upon successful authentication.
+        /// </summary>
+        /// <param name="returnUrl">Destination URL after login.</param>
+        /// <returns>Redirect to destination, 2FA challenge, or confirmation view.</returns>
         // GET: /Account/ExternalLoginCallback
         [AllowAnonymous]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
@@ -343,16 +441,23 @@ namespace ClimateGSR.Controllers
                     // If the user does not have an account, then prompt the user to create an account
                     ViewBag.ReturnUrl = returnUrl;
                     ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
-                    return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Email });
+                    return View("ExternalLoginConfirmation",
+                        new ExternalLoginConfirmationViewModel { Email = loginInfo.Email });
             }
         }
 
-        //
+        /// <summary>
+        /// Confirms details for an external login account and provisions the local application user record.
+        /// </summary>
+        /// <param name="model">External login confirmation details.</param>
+        /// <param name="returnUrl">Destination URL.</param>
+        /// <returns>Redirect result or view redisplay upon failure.</returns>
         // POST: /Account/ExternalLoginConfirmation
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
+        public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model,
+            string returnUrl)
         {
             if (User.Identity.IsAuthenticated)
             {
@@ -367,6 +472,7 @@ namespace ClimateGSR.Controllers
                 {
                     return View("ExternalLoginFailure");
                 }
+
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
@@ -378,6 +484,7 @@ namespace ClimateGSR.Controllers
                         return RedirectToLocal(returnUrl);
                     }
                 }
+
                 AddErrors(result);
             }
 
@@ -385,7 +492,10 @@ namespace ClimateGSR.Controllers
             return View(model);
         }
 
-        //
+        /// <summary>
+        /// Signs out the currently authenticated user by clearing the application cookie.
+        /// </summary>
+        /// <returns>Redirect to Home/Index.</returns>
         // POST: /Account/LogOff
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -395,7 +505,10 @@ namespace ClimateGSR.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        //
+        /// <summary>
+        /// Displays the error view for failed external authentication attempts.
+        /// </summary>
+        /// <returns>The external login failure view.</returns>
         // GET: /Account/ExternalLoginFailure
         [AllowAnonymous]
         public ActionResult ExternalLoginFailure()
@@ -403,6 +516,10 @@ namespace ClimateGSR.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Releases managed and unmanaged resources held by the user and sign-in managers.
+        /// </summary>
+        /// <param name="disposing">True if called during explicit disposal.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -424,15 +541,13 @@ namespace ClimateGSR.Controllers
         }
 
         #region Helpers
+
         // Used for XSRF protection when adding external logins
         private const string XsrfKey = "XsrfId";
 
         private IAuthenticationManager AuthenticationManager
         {
-            get
-            {
-                return HttpContext.GetOwinContext().Authentication;
-            }
+            get { return HttpContext.GetOwinContext().Authentication; }
         }
 
         private void AddErrors(IdentityResult result)
@@ -449,6 +564,7 @@ namespace ClimateGSR.Controllers
             {
                 return Redirect(returnUrl);
             }
+
             return RedirectToAction("Index", "Home");
         }
 
@@ -477,9 +593,11 @@ namespace ClimateGSR.Controllers
                 {
                     properties.Dictionary[XsrfKey] = UserId;
                 }
+
                 context.HttpContext.GetOwinContext().Authentication.Challenge(properties, LoginProvider);
             }
         }
+
         #endregion
     }
 }
