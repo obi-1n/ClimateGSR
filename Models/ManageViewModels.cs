@@ -180,13 +180,12 @@ namespace ClimateGSR.Models
     /// <summary>
     /// View model for permanent account deletion requests.
     /// </summary>
-    public class DeleteAccountViewModel
+    public class DeleteAccountViewModel : IValidatableObject
     {
         /// <summary>
         /// Explicit checkbox confirmation acknowledging permanent account deletion.
         /// </summary>
         [Display(Name = "I understand that deleting my account is permanent and cannot be undone.")]
-        [Range(typeof(bool), "true", "true", ErrorMessage = "You must confirm account deletion to proceed.")]
         public bool ConfirmDelete { get; set; }
 
         /// <summary>
@@ -195,5 +194,15 @@ namespace ClimateGSR.Models
         [DataType(DataType.Password)]
         [Display(Name = "Confirm Password")]
         public string Password { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (!ConfirmDelete)
+            {
+                yield return new ValidationResult(
+                    "You must confirm account deletion to proceed.",
+                    new[] { nameof(ConfirmDelete) });
+            }
+        }
     }
 }

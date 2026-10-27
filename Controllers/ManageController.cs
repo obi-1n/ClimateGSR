@@ -366,8 +366,14 @@ namespace ClimateGSR.Controllers
                 return View("Error");
             }
 
-            if (user.PasswordHash != null && !string.IsNullOrEmpty(model.Password))
+            if (user.PasswordHash != null)
             {
+                if (string.IsNullOrEmpty(model.Password))
+                {
+                    ModelState.AddModelError("Password", "Password is required to confirm account deletion.");
+                    return View(model);
+                }
+
                 var checkPass = await UserManager.CheckPasswordAsync(user, model.Password);
                 if (!checkPass)
                 {
