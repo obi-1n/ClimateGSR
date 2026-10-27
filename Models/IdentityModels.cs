@@ -29,6 +29,9 @@ namespace ClimateGSR.Models
         /// </summary>
         /// <param name="manager">The user manager instance.</param>
         /// <returns>A task representing the asynchronous operation with the created ClaimsIdentity.</returns>
+        public string Firstname { get; set; }
+        public string Lastname { get; set; }
+        public string RegisteredAt { get; set; }
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType

@@ -43,5 +43,7 @@ namespace ClimateGSR.Models
         /// Gets or sets the database set of Continent entities.
         /// </summary>
         public DbSet<Continent> Continents { get; set; }
+        public DbSet<Member> Members { get; set; }
+
     }
 }
