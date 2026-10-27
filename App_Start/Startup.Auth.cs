@@ -9,9 +9,15 @@ using ClimateGSR.Models;
 
 namespace ClimateGSR
 {
+    /// <summary>
+    /// Partial Startup class configuring ASP.NET Identity and cookie-based authentication.
+    /// </summary>
     public partial class Startup
     {
-        // For more information on configuring authentication, please visit https://go.microsoft.com/fwlink/?LinkId=301864
+        /// <summary>
+        /// Configures ASP.NET Identity services and OWIN authentication middleware.
+        /// </summary>
+        /// <param name="app">The OWIN application builder.</param>
         public void ConfigureAuth(IAppBuilder app)
         {
             // Configure the db context, user manager and signin manager to use a single instance per request

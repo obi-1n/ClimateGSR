@@ -9,6 +9,9 @@ using System.Web.Mvc;
 
 namespace ClimateGSR.Controllers
 {
+    /// <summary>
+    /// Handles top-level navigation pages including the Home/Game landing page, About page, and Contact page.
+    /// </summary>
     public class CountryStat
     {
         public string Country { get; set; }
@@ -22,11 +25,19 @@ namespace ClimateGSR.Controllers
     }
     public class HomeController : Controller
     {
+        /// <summary>
+        /// Displays the main application landing and game interface.
+        /// </summary>
+        /// <returns>The primary index view.</returns>
         public ActionResult Index()
         {
             return View();
         }
 
+        /// <summary>
+        /// Displays descriptive information regarding the Climate Global Status Report project.
+        /// </summary>
+        /// <returns>The about view.</returns>
         [HttpGet]
         public JsonResult GetClimateData()
         {
@@ -201,6 +212,10 @@ namespace ClimateGSR.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Displays project and support contact information.
+        /// </summary>
+        /// <returns>The contact view.</returns>
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
