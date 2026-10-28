@@ -184,6 +184,7 @@
     <Compile Include="Models\Hint.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\Member.cs" />
     <Compile Include="Models\Question.cs" />
     <Compile Include="Models\QuestionGenerator.cs" />
     <Compile Include="Models\ViewModels\PlayViewModel.cs" />
@@ -208,6 +209,7 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\game.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -266,6 +268,7 @@
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Game\Play.cshtml" />
+    <Content Include="Views\Game\Result.cshtml" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
