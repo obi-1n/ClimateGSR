@@ -1,120 +1,61 @@
 ﻿@model ClimateGSR.Models.ViewModels.PlayViewModel
 
-@functions {
-    static string IconFor(string type)
-    {
-        switch (type)
-        {
-            case "Temperature": return "🌡️";
-            case "EmissionsPerCapita": return "🏭";
-            case "Population": return "👥";
-            case "Area": return "🗺️";
-            case "Continent": return "🌍";
-            case "FirstLetter": return "🔤";
-            default: return "💡";
-        }
-    }
-
-    static string LabelFor(string type)
-    {
-        switch (type)
-        {
-            case "Temperature": return "Climate";
-            case "EmissionsPerCapita": return "Emissions per person";
-            case "Population": return "Population";
-            case "Area": return "Size";
-            case "Continent": return "Location";
-            case "FirstLetter": return "Name";
-            default: return "Hint";
-        }
-    }
-}
-
 @{
     ViewBag.Title = "Round " + Model.RoundNumber;
-
-    int progress = Model.RoundNumber * 100 / Model.TotalRounds;
-    int lastIndex = Model.RevealedHints.Count - 1;
-    string meterClass = Model.PointsAvailable >= 75 ? "high" : Model.PointsAvailable >= 50 ? "mid" : "low";
-
-    string feedback = Model.Feedback ?? "";
-    string toastClass = feedback.StartsWith("Correct") ? "toast-good"
-                      : feedback.StartsWith("Not quite") ? "toast-miss"
-                      : "toast-info";
 }
 
 <link href="@Url.Content("~/Content/game.css")" rel="stylesheet" />
 
 <div class="game-page">
 
-    <div class="game-top">
-        <span class="round-label">Round @Model.RoundNumber of @Model.TotalRounds</span>
-        <span class="pill">@Model.Score pts</span>
-    </div>
-    <div class="progress-track">
-        <div class="progress-fill" style="width:@(progress)%"></div>
+    <div class="top-bar">
+        <span>Round @Model.RoundNumber of @Model.TotalRounds</span>
+        <span>Score: @Model.Score</span>
     </div>
 
-    @if (feedback != "")
+    @if (!string.IsNullOrEmpty(Model.Feedback))
     {
-        <div class="toast-g @toastClass">@feedback</div>
+        <div class="message">@Model.Feedback</div>
     }
 
-    <div class="prompt-card">
-        <div class="prompt-eyebrow">Which country is this?</div>
-        <p class="prompt-text">@Model.EmissionsPrompt</p>
+    <div class="question-box">
+        <h4>Which country is this?</h4>
+        <p>@Model.EmissionsPrompt</p>
     </div>
 
-    <div class="hints">
-        @if (Model.RevealedHints.Count == 0)
-        {
-            <div class="hint-empty">No hints yet. Each hint you reveal costs 25 points.</div>
-        }
+    @if (Model.RevealedHints.Count == 0)
+    {
+        <p>No hints revealed yet.</p>
+    }
 
-        @for (int i = 0; i < Model.RevealedHints.Count; i++)
-        {
-            var hint = Model.RevealedHints[i];
-            <div class="hint @(i == lastIndex ? "hint-new" : "")">
-                <div class="hint-icon">@IconFor(hint.Type)</div>
-                <div>
-                    <div class="hint-label">@LabelFor(hint.Type)</div>
-                    <p class="hint-text">@hint.Value</p>
-                </div>
-            </div>
-        }
-    </div>
+    @foreach (var hint in Model.RevealedHints)
+    {
+        <div class="hint-box">@hint.Value</div>
+    }
 
-    <div class="points">
-        <span class="points-label">@Model.PointsAvailable pts available</span>
-        <div class="meter">
-            <div class="meter-fill @meterClass" style="width:@(Model.PointsAvailable)%"></div>
-        </div>
-    </div>
+    <p>Points available for this round: <strong>@Model.PointsAvailable</strong></p>
 
     @using (Html.BeginForm("Guess", "Game", FormMethod.Post))
     {
         @Html.AntiForgeryToken()
-        <div class="guess-row">
-            <input type="text" name="guess" class="guess-input" placeholder="Type a country..."
-                   autocomplete="off" autofocus />
-            <button type="submit" class="btn-g btn-primary-g">Guess</button>
-        </div>
+        <input type="text" name="guess" class="guess-input" placeholder="Enter a country" autocomplete="off" autofocus />
+        <button type="submit" class="game-btn">Guess</button>
     }
 
-    <div class="actions">
+    <div class="button-row">
         @if (Model.CanRevealMore)
         {
             using (Html.BeginForm("RevealHint", "Game", FormMethod.Post))
             {
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn-g btn-outline-g">Reveal a hint (-25)</button>
+                <button type="submit" class="game-btn game-btn-light">Reveal hint (-25 points)</button>
             }
         }
 
         @using (Html.BeginForm("GiveUp", "Game", FormMethod.Post))
         {
             @Html.AntiForgeryToken()
-            <button type="submit" class="btn-g btn-ghost-g">Give up</button>
+            <button type="submit" class="game-btn game-btn-light">Give up</button>
         }
     </div>
 

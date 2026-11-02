@@ -2,57 +2,45 @@
 
 @{
     ViewBag.Title = "Game Over";
-
-    int max = Model.Questions.Count * 100;
-    int pct = max == 0 ? 0 : Math.Min(100, Model.Score * 100 / max);
-
-    string rank = pct >= 80 ? "Climate champion"
-                : pct >= 50 ? "Green thumb"
-                : pct >= 25 ? "Getting there"
-                : "Seedling";
-
-    string feedback = ViewBag.Feedback as string ?? "";
 }
 
 <link href="@Url.Content("~/Content/game.css")" rel="stylesheet" />
 
 <div class="game-page">
-    <div class="result-hero">
-        <div class="prompt-eyebrow" style="color:var(--g-600)">Game over</div>
-        <h2>@rank</h2>
-        <p class="result-sub">Nice work, you've finished all @Model.Questions.Count rounds.</p>
 
-        <div class="score-ring" style="--pct:@pct">
-            <div class="score-ring-inner">
-                <span class="score-number">@Model.Score</span>
-                <span class="score-max">@(Model.Score > max ? "incl. bonus" : "out of " + max)</span>
-            </div>
-        </div>
-    </div>
+    <h2 class="center">Game over!</h2>
 
-    @if (feedback != "")
+    <div class="score-big">@Model.Score</div>
+    <p class="center">points out of a possible @(Model.Questions.Count * 100)</p>
+
+    @if (!string.IsNullOrEmpty(ViewBag.Feedback as string))
     {
-        <div class="toast-g toast-info">@feedback</div>
+        <div class="message">@ViewBag.Feedback</div>
     }
 
-    <div class="section-title">Countries in this game</div>
-    <div class="chips">
-        @foreach (var q in Model.Questions)
-        {
-            <span class="chip">@q.Answer</span>
-        }
+    <div class="country-list">
+        <strong>Countries in this game:</strong>
+        <ul>
+            @foreach (var q in Model.Questions)
+            {
+                <li>@q.Answer</li>
+            }
+        </ul>
     </div>
 
-    <div class="result-actions">
+    <div class="center">
         @if (ViewBag.BonusAvailable == true)
         {
             using (Html.BeginForm("StartBonus", "Game", FormMethod.Post))
             {
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn-g btn-outline-g">Play bonus round</button>
+                <button type="submit" class="game-btn game-btn-light">Play bonus round</button>
             }
         }
 
-        @Html.ActionLink("Play again", "Start", "Game", null, new { @class = "btn-g btn-primary-g" })
+        <p style="margin-top:10px">
+            @Html.ActionLink("Play again", "Start", "Game", null, new { @class = "game-btn" })
+        </p>
     </div>
+
 </div>
