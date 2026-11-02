@@ -16,13 +16,21 @@ namespace ClimateGSR.Models
     /// </summary>
     public class ClimateGSRDbContext : IdentityDbContext<ApplicationUser>
     {
+        static ClimateGSRDbContext()
+        {
+            Database.SetInitializer(new MigrateDatabaseToLatestVersion<ClimateGSRDbContext, Migrations.Configuration>(useSuppliedContext: true));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ClimateGSRDbContext"/> class using the "DefaultConnection" connection string.
         /// Configures the custom <see cref="DatabaseInitialiser"/> for database seeding.
         /// </summary>
-        public ClimateGSRDbContext() : base("DefaultConnection", throwIfV1Schema: false) 
+        public ClimateGSRDbContext() : this("DefaultConnection")
         {
-            Database.SetInitializer(new DatabaseInitialiser());
+        }
+
+        public ClimateGSRDbContext(string connectionString) : base(connectionString, throwIfV1Schema: false)
+        {
         }
 
         /// <summary>

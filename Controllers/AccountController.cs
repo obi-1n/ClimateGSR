@@ -193,12 +193,7 @@ namespace ClimateGSR.Controllers
                     UserName = model.Email,
                     Email = model.Email,
                     FirstName = model.FirstName?.Trim(),
-                    LastName = model.LastName?.Trim()
-                var user = new ApplicationUser {
-                    UserName = model.Email, 
-                    Email = model.Email,
-                    Firstname = model.FirstName,
-                    Lastname = model.LastName,
+                    LastName = model.LastName?.Trim(),
                     RegisteredAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                 };
                 var result = await UserManager.CreateAsync(user, model.Password);

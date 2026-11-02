@@ -84,6 +84,7 @@
         //track currently selected country and json layer
         let selectedLayer = null;
         let climateDataMap = {};
+        let climateDataByCode = {};
 
         //common country names that might not match csv data and json outlines
         const nameAliases = {
@@ -128,7 +129,11 @@
         };
 
         //helper function to retrieve country stats from the climateDataMap, considering aliases
-        function getCountryStats(geoName) {
+        function getCountryStats(feature) {
+            const properties = feature.properties;
+            const code = properties['ISO3166-1-Alpha-3'] || properties.ISO_A3;
+            if (code && climateDataByCode[code]) return climateDataByCode[code];
+            const geoName = properties.ADMIN || properties.name;
             if (!geoName) return null;
             const key = geoName.toLowerCase();
             if (climateDataMap[key]) return climateDataMap[key];
@@ -142,10 +147,14 @@
 
         //fetch csv data from the server and then fetch the GeoJSON polygons for countries
         fetch('@Url.Action("GetClimateData", "Home")')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Climate data request failed.');
+                return response.json();
+            })
             .then(data => {
                 //store csv data in a map for quick access by country name
                 data.forEach(item => {
+                    if (item.IsoCode) climateDataByCode[item.IsoCode] = item;
                     if (item.Country)
                     {
                         climateDataMap[item.Country.trim().toLowerCase()] = item;
@@ -155,18 +164,19 @@
                 //fetch the GeoJSON data for countries from the GitHub repository
                 return fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Country outlines request failed.');
+                return response.json();
+            })
             .then(geoData => {
-                geoJsonLayer = L.geoJson(geoData, {
+                const geoJsonLayer = L.geoJson(geoData, {
                     style: function (feature) {
-                        const countryName = feature.properties.ADMIN || feature.properties.name;
-                        const hasData = getCountryStats(countryName) !== null;
+                        const hasData = getCountryStats(feature) !== null;
                         //only outline countries that are within the csv data, others are greyed out
                         return hasData ? defaultStyle : inactiveCountryStyle;
                     },
                     onEachFeature: function (feature, layer) {
-                        const countryName = feature.properties.ADMIN || feature.properties.name;
-                        const countryStats = getCountryStats(countryName);
+                        const countryStats = getCountryStats(feature);
 
                         //only attach hover and click events to countries in the CSV files
                         if (countryStats) {
@@ -204,7 +214,10 @@
                     }
                 }).addTo(map);
             })
-            .catch(err => console.error("Error loading map or climate data:", err));
+            .catch(err => {
+                console.error("Error loading map or climate data:", err);
+                document.getElementById('stat-content').textContent = 'The map could not be loaded. Please refresh to try again.';
+            });
 
         //update the UI with the selected country's CSV stats
         function updateStatsPanel(stats) {
