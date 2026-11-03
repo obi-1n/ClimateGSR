@@ -193,12 +193,7 @@ namespace ClimateGSR.Controllers
                     UserName = model.Email,
                     Email = model.Email,
                     FirstName = model.FirstName?.Trim(),
-                    LastName = model.LastName?.Trim()
-                var user = new ApplicationUser {
-                    UserName = model.Email, 
-                    Email = model.Email,
-                    Firstname = model.FirstName,
-                    Lastname = model.LastName,
+                    LastName = model.LastName?.Trim(),
                     RegisteredAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                 };
                 var result = await UserManager.CreateAsync(user, model.Password);
@@ -214,11 +209,12 @@ namespace ClimateGSR.Controllers
                             PointsPerGame = 0.0,
                             Highscore = 0
                         });
-                        
+
                         await db.SaveChangesAsync();
                     }
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
