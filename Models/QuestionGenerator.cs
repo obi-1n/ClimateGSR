@@ -1,28 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Globalization;
 using System.Linq;
-using System.Web;
 
 namespace ClimateGSR.Models
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Data.Entity;
-    using System.Globalization;
-    using System.Linq;
-
     //Builds quiz questions from the Countries table. Each question has an
     //emissions prompt (shown at the start), the answer (the country's name),
     //and a shuffled list of hints about the country.
-    public class QuestionGenerator
-    {
-        // Countries below this population are never chosen - makes questions guessable
     /// <summary>
     /// Service responsible for selecting random countries from the database and generating
     /// guessing-game questions with formatted hints and climate prompts.
     /// </summary>
     public class QuestionGenerator
     {
+        // Countries below this population are never chosen - makes questions guessable
         /// <summary>
         /// Minimum population threshold used when querying countries to ensure questions are reasonably recognizable and guessable.
         /// Excludes tiny territories. Set to 0 to include all countries.
@@ -33,7 +26,6 @@ namespace ClimateGSR.Models
         /// Pseudo-random number generator instance.
         /// </summary>
         private static readonly Random Rng = new Random();
-        private static readonly object RngLock = new object(); //thread safety
 
         //Randomly reorders a list in place
 
@@ -89,7 +81,7 @@ namespace ClimateGSR.Models
             return new Question
             {
                 Country = country,
-                Answer = country.Name,                                
+                Answer = country.Name,
                 EmissionsPrompt = FormatEmissions(country.Emissions), //Shown at the start
                 Hints = GenerateHints(country)
             };
@@ -199,6 +191,5 @@ namespace ClimateGSR.Models
 
             return "This country emitted about " + amount + " tonnes of CO2 in 2024.";
         }
-
     }
 }
