@@ -1,0 +1,46 @@
+﻿@model ClimateGSR.Models.Game
+
+@{
+    ViewBag.Title = "Game Over";
+}
+
+<link href="@Url.Content("~/Content/game.css")" rel="stylesheet" />
+
+<div class="game-page">
+
+    <h2 class="center">Game over!</h2>
+
+    <div class="score-big">@Model.Score</div>
+    <p class="center">points out of a possible @(Model.Questions.Count * 100)</p>
+
+    @if (!string.IsNullOrEmpty(ViewBag.Feedback as string))
+    {
+        <div class="message">@ViewBag.Feedback</div>
+    }
+
+    <div class="country-list">
+        <strong>Countries in this game:</strong>
+        <ul>
+            @foreach (var q in Model.Questions)
+            {
+                <li>@q.Answer</li>
+            }
+        </ul>
+    </div>
+
+    <div class="center">
+        @if (ViewBag.BonusAvailable == true)
+        {
+            using (Html.BeginForm("StartBonus", "Game", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="game-btn game-btn-light">Play bonus round</button>
+            }
+        }
+
+        <p style="margin-top:10px">
+            @Html.ActionLink("Play again", "Start", "Game", null, new { @class = "game-btn" })
+        </p>
+    </div>
+
+</div>
