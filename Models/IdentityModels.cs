@@ -33,6 +33,9 @@ namespace ClimateGSR.Models
         /// </summary>
         /// <param name="manager">The user manager instance.</param>
         /// <returns>A task representing the asynchronous operation with the created ClaimsIdentity.</returns>
+        /// <summary>
+        /// Timestamp when the user registered.
+        /// </summary>
         public string RegisteredAt { get; set; }
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {

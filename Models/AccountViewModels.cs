@@ -11,7 +11,9 @@ namespace ClimateGSR.Models
         /// <summary>
         /// User's email address returned or requested from the external provider.
         /// </summary>
-        [Required] [Display(Name = "Email")] public string Email { get; set; }
+        [Required]
+        [Display(Name = "Email")]
+        public string Email { get; set; }
     }
 
     /// <summary>
@@ -59,12 +61,15 @@ namespace ClimateGSR.Models
         /// <summary>
         /// Name of the two-factor provider used to generate the code.
         /// </summary>
-        [Required] public string Provider { get; set; }
+        [Required]
+        public string Provider { get; set; }
 
         /// <summary>
         /// The verification code entered by the user.
         /// </summary>
-        [Required] [Display(Name = "Code")] public string Code { get; set; }
+        [Required]
+        [Display(Name = "Code")]
+        public string Code { get; set; }
 
         /// <summary>
         /// Destination URL after successful code verification.
@@ -91,7 +96,9 @@ namespace ClimateGSR.Models
         /// <summary>
         /// Registered email address of the account to recover.
         /// </summary>
-        [Required] [Display(Name = "Email")] public string Email { get; set; }
+        [Required]
+        [Display(Name = "Email")]
+        public string Email { get; set; }
     }
 
     /// <summary>
@@ -118,7 +125,8 @@ namespace ClimateGSR.Models
         /// <summary>
         /// Flag indicating whether the login cookie should persist across sessions.
         /// </summary>
-        [Display(Name = "Remember me?")] public bool RememberMe { get; set; }
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; }
     }
 
     /// <summary>
