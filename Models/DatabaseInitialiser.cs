@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using System.Data.Entity;
 using System.Globalization;
 using System.IO;
@@ -8,18 +9,20 @@ using System.Web.Hosting;
 namespace ClimateGSR.Models
 {
     /// <summary>
-    /// Custom database initializer that re-creates and seeds the database whenever model changes occur.
+    /// Seeds missing climate data without deleting existing accounts or scores.
     /// Reads and merges country, emissions, temperature, demographic, and continent data from App_Data CSV/text files.
     /// </summary>
-    public class DatabaseInitialiser : DropCreateDatabaseIfModelChanges<ClimateGSRDbContext>
+    public static class DatabaseInitialiser
     {
         /// <summary>
         /// Seeds the database with country and continent records parsed and aggregated from raw data files in ~/App_Data/.
         /// </summary>
         /// <param name="context">The database context to seed.</param>
-        protected override void Seed(ClimateGSRDbContext context)
+        public static void Seed(ClimateGSRDbContext context)
         {
-            string dir = HostingEnvironment.MapPath("~/App_Data/");
+            if (context.Countries.Any()) return;
+            string dir = HostingEnvironment.MapPath("~/App_Data/")
+                ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data");
             var inv = CultureInfo.InvariantCulture;
             var countries = new Dictionary<string, Country>();
 
@@ -115,7 +118,6 @@ namespace ClimateGSR.Models
             context.Set<Country>().AddRange(toSave);
             context.SaveChanges();
 
-            base.Seed(context);
         }
     }
 }

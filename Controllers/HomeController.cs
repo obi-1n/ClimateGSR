@@ -1,225 +1,112 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web;
 using System.Web.Mvc;
 
 namespace ClimateGSR.Controllers
 {
-    /// <summary>
-    /// Handles top-level navigation pages including the Home/Game landing page, About page, and Contact page.
-    /// </summary>
     public class CountryStat
     {
+        public string IsoCode { get; set; }
         public string Country { get; set; }
         public string CO2 { get; set; } = "N/A";
         public string Population { get; set; } = "N/A";
         public string Temperature { get; set; } = "N/A";
         public string CO2PerCapita { get; set; } = "N/A";
-
         public double? RawCO2 { get; set; }
         public double? RawPopulation { get; set; }
     }
+
     public class HomeController : Controller
     {
-        /// <summary>
-        /// Displays the main application landing and game interface.
-        /// </summary>
-        /// <returns>The primary index view.</returns>
         public ActionResult Index()
         {
             return View();
         }
 
-        /// <summary>
-        /// Displays descriptive information regarding the Climate Global Status Report project.
-        /// </summary>
-        /// <returns>The about view.</returns>
         [HttpGet]
         public JsonResult GetClimateData()
         {
-            string appDataPath = Server.MapPath("~/App_Data");
+            var directory = Server.MapPath("~/App_Data");
             var stats = new Dictionary<string, CountryStat>(StringComparer.OrdinalIgnoreCase);
+            var invariant = CultureInfo.InvariantCulture;
 
-            //co2.csv is formatted different so we need a regex to split on commas that are not inside quotes
-            Regex csvSplit = new Regex(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-
-            //helper to determine whether Country Name is in Column 0 or Column 1 since co2.csv is different format to other csv
-            string ExtractCountryName(string[] parts, out int dataStartIndex)
+            // GeoNames is tab-separated. Its ISO3 code joins the three datasets reliably.
+            foreach (var line in System.IO.File.ReadLines(Path.Combine(directory, "countries.txt")))
             {
-                dataStartIndex = 1;
-                string col0 = parts[0].Trim().Trim('"');
-                string col1 = parts.Length > 1 ? parts[1].Trim().Trim('"') : "";
-
-                //ff Column 0 is a 3-letter ISO code (e.g. WLD, GBR, AFG) and Col 1 is text (not a number)
-                if (col0.Length == 3 && col0.All(char.IsLetter) &&
-                    !string.IsNullOrEmpty(col1) && !double.TryParse(col1, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
-                {
-                    dataStartIndex = 2;
-                    return col1;
-                }
-
-                //otherwise, Col 0 is the Country Name
-                //if Col 1 is a 3-letter ISO code, data starts at Col 2
-                if (col1.Length == 3 && col1.All(char.IsLetter))
-                {
-                    dataStartIndex = 2;
-                }
-
-                return col0;
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+                var parts = line.Split('\t');
+                if (parts.Length < 9 || parts[1].Length != 3) continue;
+                stats[parts[1]] = new CountryStat { IsoCode = parts[1], Country = parts[4] };
             }
 
-            //loads country data from countries.txt, ensuring all countries are represented
-            string countriesFile = Path.Combine(appDataPath, "countries.txt");
-            if (System.IO.File.Exists(countriesFile))
+            var csvSplit = new Regex(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+            foreach (var line in System.IO.File.ReadLines(Path.Combine(directory, "CO2.csv")).Skip(1))
             {
-                var lines = System.IO.File.ReadAllLines(countriesFile);
-                foreach (var line in lines.Where(l => !string.IsNullOrWhiteSpace(l)))
+                var parts = csvSplit.Split(line).Select(p => p.Trim().Trim('"')).ToArray();
+                CountryStat stat;
+                if (parts.Length < 3 || !stats.TryGetValue(parts[0], out stat)) continue;
+                for (var column = parts.Length - 1; column >= 2; column--)
                 {
-                    string cName = line.Split(',')[0].Trim().Trim('"');
-                    if (!stats.ContainsKey(cName))
-                    {
-                        stats[cName] = new CountryStat { Country = cName };
-                    }
+                    double tonnes;
+                    if (!double.TryParse(parts[column], NumberStyles.Float, invariant, out tonnes)) continue;
+                    stat.RawCO2 = tonnes;
+                    stat.CO2 = tonnes >= 1e9 ? (tonnes / 1e9).ToString("N2") + " Billion tonnes (Gt/yr)"
+                        : tonnes >= 1e6 ? (tonnes / 1e6).ToString("N2") + " Million tonnes (Mt/yr)"
+                        : tonnes.ToString("N0") + " tonnes/yr";
+                    break;
                 }
             }
 
-            //helps to parse CSV files and update the CountryStat object for each country, based on updated values in csv files
-            void ParseCsv(string fileName, Action<CountryStat, double> updateStat)
+            ReadLatest("population.csv", (stat, value) =>
             {
-                string filePath = Path.Combine(appDataPath, fileName);
-                if (!System.IO.File.Exists(filePath)) return;
+                stat.RawPopulation = value;
+                stat.Population = value >= 1e9 ? (value / 1e9).ToString("N2") + " Billion people"
+                    : value >= 1e6 ? (value / 1e6).ToString("N2") + " Million people"
+                    : value.ToString("N0") + " people";
+            });
+            ReadLatest("temperature.csv", (stat, value) => stat.Temperature = value.ToString("N2") + " °C");
 
-                var lines = System.IO.File.ReadAllLines(filePath);
-
-                foreach (var line in lines)
-                {
-                    if (string.IsNullOrWhiteSpace(line)) continue;
-
-                    var parts = csvSplit.Split(line);
-                    if (parts.Length < 2) continue;
-
-                    string col0 = parts[0].Trim().Trim('"');
-                    //skip header rows
-                    if (col0.StartsWith("(") || col0.StartsWith("DOI") ||
-                        col0.Equals("ISO", StringComparison.OrdinalIgnoreCase) ||
-                        col0.Equals("Code", StringComparison.OrdinalIgnoreCase) ||
-                        col0.Equals("Country", StringComparison.OrdinalIgnoreCase) ||
-                        col0.Equals("Entity", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    string countryName = ExtractCountryName(parts, out int startCol);
-                    if (string.IsNullOrEmpty(countryName) ||
-                        countryName.Equals("Country", StringComparison.OrdinalIgnoreCase) ||
-                        countryName.Equals("Entity", StringComparison.OrdinalIgnoreCase) ||
-                        countryName.Equals("Name", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    // Scan backwards from the end of the row to get the most recent valid number
-                    for (int col = parts.Length - 1; col >= startCol; col--)
-                    {
-                        string val = parts[col].Trim().Trim('"');
-                        if (!string.IsNullOrWhiteSpace(val) &&
-                            double.TryParse(val, NumberStyles.Any, CultureInfo.InvariantCulture, out double numericVal))
-                        {
-                            if (!stats.ContainsKey(countryName))
-                            {
-                                stats[countryName] = new CountryStat { Country = countryName };
-                            }
-
-                            updateStat(stats[countryName], numericVal);
-                            break;
-                        }
-                    }
-                }
+            foreach (var stat in stats.Values)
+            {
+                if (stat.RawCO2.HasValue && stat.RawPopulation > 0)
+                    stat.CO2PerCapita = (stat.RawCO2.Value / stat.RawPopulation.Value).ToString("N2") + " tonnes / person";
             }
 
-            //formatting helpers for Climate Awareness
-            string FormatCO2(double tonnes)
-                    {
-                        if (tonnes >= 1_000_000_000)
-                            return $"{(tonnes / 1_000_000_000.0):N2} Billion tonnes (Gt/yr)";
-                        if (tonnes >= 1_000_000)
-                            return $"{(tonnes / 1_000_000.0):N2} Million tonnes (Mt/yr)";
-                        if (tonnes >= 1_000)
-                            return $"{tonnes:N0} tonnes/yr";
-                        return $"{tonnes:N2} Mt/yr"; //in case dataset is already in Megatonnes
-                    }
+            return Json(stats.Values.OrderBy(s => s.Country).ToList(), JsonRequestBehavior.AllowGet);
 
-                    string FormatPopulation(double pop)
-                    {
-                        //some population CSVs store numbers in thousands
-                        //standard population counts:
-                        if (pop >= 1_000_000_000)
-                            return $"{(pop / 1_000_000_000.0):N2} Billion people";
-                        if (pop >= 1_000_000)
-                            return $"{(pop / 1_000_000.0):N2} Million people";
-                        return $"{pop:N0} people";
-                    }
-
-                    string FormatTemperature(double temp)
-                    {
-                        //if temperature is between -5 and +5, possible anomaly; otherwise average temp,
-                        return $"{temp:N2} °C";
-                    }
-
-                    //parse each file
-                    ParseCsv("CO2.csv", (stat, val) =>
-                    {
-                        stat.RawCO2 = val;
-                        stat.CO2 = FormatCO2(val);
-                    });
-
-                    ParseCsv("population.csv", (stat, val) =>
-                    {
-                        stat.RawPopulation = val;
-                        stat.Population = FormatPopulation(val);
-                    });
-
-                    ParseCsv("temperature.csv", (stat, val) =>
-                    {
-                        stat.Temperature = FormatTemperature(val);
-                    });
-
-                    //calculate CO2 Per Capita
-                    foreach (var item in stats.Values)
-                    {
-                        if (item.RawCO2.HasValue && item.RawPopulation.HasValue && item.RawPopulation.Value > 0)
-                        {
-                            double perCapita = item.RawCO2.Value / item.RawPopulation.Value;
-                            item.CO2PerCapita = $"{perCapita:N2} tonnes / person";
-                        }
-                    }
-
-                    return Json(stats.Values.ToList(), JsonRequestBehavior.AllowGet);
+            void ReadLatest(string fileName, Action<CountryStat, double> update)
+            {
+                var latestYears = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                foreach (var line in System.IO.File.ReadLines(Path.Combine(directory, fileName)).Skip(1))
+                {
+                    var parts = csvSplit.Split(line).Select(p => p.Trim().Trim('"')).ToArray();
+                    CountryStat stat;
+                    int year;
+                    double value;
+                    if (parts.Length < 4 || !stats.TryGetValue(parts[1], out stat)
+                        || !int.TryParse(parts[2], out year)
+                        || !double.TryParse(parts[3], NumberStyles.Float, invariant, out value)) continue;
+                    int previousYear;
+                    if (latestYears.TryGetValue(parts[1], out previousYear) && year < previousYear) continue;
+                    latestYears[parts[1]] = year;
+                    update(stat, value);
                 }
-            
-        
-        
-
+            }
+        }
 
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";
-
             return View();
         }
 
-        /// <summary>
-        /// Displays project and support contact information.
-        /// </summary>
-        /// <returns>The contact view.</returns>
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
-
             return View();
         }
     }
