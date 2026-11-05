@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNet.Identity.EntityFramework;
+﻿using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Data.Entity;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
+using System.Web;
 
 namespace ClimateGSR.Models
 {
@@ -16,6 +16,11 @@ namespace ClimateGSR.Models
     /// </summary>
     public class ClimateGSRDbContext : IdentityDbContext<ApplicationUser>
     {
+        static ClimateGSRDbContext()
+        {
+            Database.SetInitializer(new MigrateDatabaseToLatestVersion<ClimateGSRDbContext, Migrations.Configuration>(useSuppliedContext: true));
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ClimateGSRDbContext"/> class using the "DefaultConnection" connection string.
         /// Configures the custom <see cref="DatabaseInitialiser"/> for database seeding.
@@ -43,7 +48,23 @@ namespace ClimateGSR.Models
         /// Gets or sets the database set of Continent entities.
         /// </summary>
         public DbSet<Continent> Continents { get; set; }
-        public DbSet<Member> Members { get; set; }
 
+        /// <summary>
+        /// Gets or sets the database set of Member entities.
+        /// </summary>
+        public DbSet<Member> Members { get; set; }
+    }
+
+    /// <summary>
+    /// Custom database initializer that recreates the database when models change and runs CSV seeding.
+    /// </summary>
+    public class ClimateDbInitializer : DropCreateDatabaseIfModelChanges<ClimateGSRDbContext>
+    {
+        protected override void Seed(ClimateGSRDbContext context)
+        {
+            // Run your custom CSV parsing and seeding logic
+            DatabaseInitialiser.Seed(context);
+            base.Seed(context);
+        }
     }
 }

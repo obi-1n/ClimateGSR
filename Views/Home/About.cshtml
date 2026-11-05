@@ -1,9 +1,44 @@
-﻿@{
+@{
     ViewBag.Title = "About";
 }
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <h3>@ViewBag.Message</h3>
 
-    <p>Use this area to provide additional information.</p>
+<main class="login-page" aria-labelledby="title">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="card login-card">
+                    <div class="login-card-top-bar"></div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <div class="login-brand-badge" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 16v-4"/>
+                                    <path d="M12 8h.01"/>
+                                </svg>
+                            </div>
+                            <h2 class="login-title" id="title">About ClimateGSR</h2>
+                            <p class="login-subtitle">A geography game built around climate data</p>
+                        </div>
+
+                        <p class="page-text">
+                            ClimateGSR challenges you to identify a country from its carbon dioxide emissions.
+                            Each round starts with a country's total emissions, and you can reveal hints about its
+                            climate, population, size and location to narrow it down. The fewer hints you use,
+                            the more points you earn.
+                        </p>
+                        <p class="page-text">
+                            Emissions figures come from a Zenodo country dataset, temperatures from Our World in Data,
+                            and population from UN estimates. Explore the same data on the interactive map on the
+                            @Html.ActionLink("home page", "Index", "Home", null, new { @class = "login-link" }).
+                        </p>
+
+                        <div class="login-register-box">
+                            <p>Ready to test your knowledge? @Html.ActionLink("Start a game", "Start", "Game", null, new { @class = "login-link" })</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>

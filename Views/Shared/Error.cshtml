@@ -1,9 +1,25 @@
-﻿@model System.Web.Mvc.HandleErrorInfo
+@model System.Web.Mvc.HandleErrorInfo
 
 @{
     ViewBag.Title = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<main class="login-page" aria-labelledby="title">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card login-card" style="border-color: rgba(239, 68, 68, 0.3);">
+                    <div class="login-card-top-bar" style="background: linear-gradient(90deg, #991b1b 0%, #dc2626 50%, #f87171 100%);"></div>
+                    <div class="card-body text-center">
+                        <h2 class="login-title" id="title" style="color: #991b1b;">Something went wrong</h2>
+                        <p class="login-subtitle" style="color: #b91c1c;">An error occurred while processing your request.</p>
 
+                        <div class="login-register-box">
+                            <p>@Html.ActionLink("Return to the home page", "Index", "Home", null, new { @class = "login-link" })</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

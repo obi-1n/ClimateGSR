@@ -14,7 +14,10 @@ namespace ClimateGSR.Models
 
         public Question Current { get { return Game.Questions[CurrentIndex]; } } 
         public bool Finished { get { return CurrentIndex >= Game.Questions.Count; } }
-    
+
+        public bool GameCounted { get; set; } 
+        public int PointsSaved { get; set; }
+
 
     }
 }

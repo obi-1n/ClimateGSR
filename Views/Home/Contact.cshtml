@@ -1,19 +1,43 @@
-﻿@{
+@{
     ViewBag.Title = "Contact";
 }
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <h3>@ViewBag.Message</h3>
 
-    <address>
-        One Microsoft Way<br />
-        Redmond, WA 98052-6399<br />
-        <abbr title="Phone">P:</abbr>
-        425.555.0100
-    </address>
+<main class="login-page" aria-labelledby="title">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="card login-card">
+                    <div class="login-card-top-bar"></div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <div class="login-brand-badge" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                                </svg>
+                            </div>
+                            <h2 class="login-title" id="title">Contact</h2>
+                            <p class="login-subtitle">Get in touch with the ClimateGSR team</p>
+                        </div>
 
-    <address>
-        <strong>Support:</strong>   <a href="mailto:Support@example.com">Support@example.com</a><br />
-        <strong>Marketing:</strong> <a href="mailto:Marketing@example.com">Marketing@example.com</a>
-    </address>
+                        @* Placeholder details from the template: replace with your own *@
+                        <div class="info-block">
+                            <address class="mb-0">
+                                One Microsoft Way<br />
+                                Redmond, WA 98052-6399<br />
+                                <abbr title="Phone">P:</abbr> 425.555.0100
+                            </address>
+                        </div>
+
+                        <div class="info-block">
+                            <address class="mb-0">
+                                <strong>Support:</strong> <a class="login-link" href="mailto:Support@example.com">Support@example.com</a><br />
+                                <strong>Marketing:</strong> <a class="login-link" href="mailto:Marketing@example.com">Marketing@example.com</a>
+                            </address>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>

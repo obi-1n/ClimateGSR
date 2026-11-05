@@ -4,8 +4,6 @@
     ViewBag.Title = "Round " + Model.RoundNumber;
 }
 
-<link href="@Url.Content("~/Content/game.css")" rel="stylesheet" />
-
 <div class="game-page">
 
     <div class="top-bar">
@@ -48,7 +46,9 @@
             using (Html.BeginForm("RevealHint", "Game", FormMethod.Post))
             {
                 @Html.AntiForgeryToken()
-                <button type="submit" class="game-btn game-btn-light">Reveal hint (-25 points)</button>
+        <button type="submit" class="game-btn game-btn-light">
+            @(Model.RevealedHints.Count < 2 ? "Reveal hint (free)" : "Reveal hint (-25 points)")
+        </button>
             }
         }
 
