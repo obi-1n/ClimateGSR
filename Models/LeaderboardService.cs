@@ -26,11 +26,13 @@ namespace ClimateGSR.Models
                                user.Id,
                                user.FirstName,
                                user.LastName,
+                               AllTimeScore = member == null ? 0 : member.LifetimePoints,
                                HighScore = member == null || user.HighScore > member.Highscore
                                    ? user.HighScore : member.Highscore,
                                GamesPlayed = member == null ? 0 : member.GamesPlayed
                            })
-                .OrderByDescending(player => player.HighScore)
+                .OrderByDescending(player => player.AllTimeScore)     // main ranking
+                .ThenByDescending(player => player.HighScore)         // tiebreaker
                 .ThenBy(player => player.FirstName)
                 .ThenBy(player => player.LastName)
                 .ThenBy(player => player.Id)
@@ -45,10 +47,16 @@ namespace ClimateGSR.Models
                 if (!string.IsNullOrWhiteSpace(player.LastName))
                     name += " " + player.LastName.Trim()[0] + ".";
 
+                // Share a rank only when both all-time score and high score are equal
+                bool tiedWithPrevious = i > 0
+                    && player.AllTimeScore == players[i - 1].AllTimeScore
+                    && player.HighScore == players[i - 1].HighScore;
+
                 entries.Add(new LeaderboardEntryViewModel
                 {
-                    Rank = i > 0 && player.HighScore == players[i - 1].HighScore ? entries[i - 1].Rank : i + 1,
+                    Rank = tiedWithPrevious ? entries[i - 1].Rank : i + 1,
                     PlayerName = name,
+                    AllTimeScore = player.AllTimeScore,
                     HighScore = player.HighScore,
                     GamesPlayed = player.GamesPlayed,
                     IsCurrentPlayer = player.Id == currentUserId

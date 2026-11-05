@@ -1,5 +1,6 @@
 ﻿using ClimateGSR.Models;
 using ClimateGSR.Models.ViewModels;
+using Microsoft.AspNet.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace ClimateGSR.Controllers
         private const int Rounds = 5;       //Number of questions per game
         private const int MaxPoints = 100;  //Points for a correct answer with no hints
         private const int HintCost = 25;    //Points lost for each hint revealed
+        private const int FreeHints = 2;    //the first two hints cost nothing
 
         //Gets the current player's game state from the session.
         //Returns null if no game has been started.
@@ -137,8 +139,60 @@ namespace ClimateGSR.Controllers
             if (s == null) return RedirectToAction("Start");
             if (!s.Finished) return RedirectToAction("Play");   //Don't allow skipping ahead to results
 
+            SaveProgress(s);
+            ViewBag.ScoreSaved = User.Identity.IsAuthenticated;
+
             ViewBag.Feedback = TempData["Feedback"];            //Message about the final round
             return View(s.Game);
+        }
+
+        [HttpGet]
+        public ActionResult Leaderboard()
+        {
+            using (var context = new ClimateGSRDbContext())
+            {
+                return View(new LeaderboardService(context).GetTopPlayers(User.Identity.GetUserId()));
+            }
+        }
+
+        /// <summary>
+        /// Saves the finished game's points to the logged-in player's Member row.
+        /// Safe to call repeatedly: it only adds points that haven't been saved yet.
+        /// </summary>
+        private void SaveProgress(GameState s)
+        {
+            if (!User.Identity.IsAuthenticated) return;      //guests can play but nothing is saved
+
+            int newPoints = s.Game.Score - s.PointsSaved;    //points not yet saved (0 on a page refresh)
+            bool countGame = !s.GameCounted;                 //only count the game once
+            if (!countGame && newPoints <= 0) return;
+
+            string userId = User.Identity.GetUserId();
+
+            using (var db = new ClimateGSRDbContext())
+            {
+                var member = db.Members.FirstOrDefault(m => m.ApplicationUserId == userId);
+
+                if (member == null)                          //create the row if registration didn't
+                {
+                    member = new Member { ApplicationUserId = userId };
+                    db.Members.Add(member);
+                }
+
+                if (countGame) member.GamesPlayed++;
+
+                member.LifetimePoints += newPoints;
+                member.Highscore = Math.Max(member.Highscore, s.Game.Score);
+                member.PointsPerGame = member.GamesPlayed > 0
+                    ? (double)member.LifetimePoints / member.GamesPlayed
+                    : 0;
+
+                db.SaveChanges();
+            }
+
+            //Only mark as saved once SaveChanges has succeeded
+            s.GameCounted = true;
+            s.PointsSaved = s.Game.Score;
         }
 
         //HELPER FUNCTIONS
@@ -158,7 +212,8 @@ namespace ClimateGSR.Controllers
         //dropping by 25 per hint revealed, never below 0.
         private static int PointsFor(GameState s)
         {
-            return Math.Max(0, MaxPoints - HintCost * s.HintsRevealed);
+            int chargedHints = Math.Max(0, s.HintsRevealed - FreeHints);
+            return Math.Max(0, MaxPoints - HintCost * chargedHints);
         }
 
         //Prepares text for comparing guesses: trims extra spaces between and

@@ -4,14 +4,25 @@
     ViewBag.Title = "Game Over";
 }
 
-<link href="@Url.Content("~/Content/game.css")" rel="stylesheet" />
-
 <div class="game-page">
 
     <h2 class="center">Game over!</h2>
 
     <div class="score-big">@Model.Score</div>
     <p class="center">points out of a possible @(Model.Questions.Count * 100)</p>
+
+    @if (ViewBag.ScoreSaved == true)
+    {
+        <p class="center">Your score has been saved to your profile.</p>
+    }
+    else
+    {
+        <p class="center">
+            @Html.ActionLink("Log in", "Login", "Account", null, new { @class = "login-link" })
+            or @Html.ActionLink("register", "Register", "Account", null, new { @class = "login-link" })
+            to save your scores and appear on the leaderboard.
+        </p>
+    }
 
     @if (!string.IsNullOrEmpty(ViewBag.Feedback as string))
     {
@@ -29,17 +40,12 @@
     </div>
 
     <div class="center">
-        @if (ViewBag.BonusAvailable == true)
-        {
-            using (Html.BeginForm("StartBonus", "Game", FormMethod.Post))
-            {
-                @Html.AntiForgeryToken()
-                <button type="submit" class="game-btn game-btn-light">Play bonus round</button>
-            }
-        }
-
         <p style="margin-top:10px">
             @Html.ActionLink("Play again", "Start", "Game", null, new { @class = "game-btn" })
+        </p>
+
+        <p style="margin-top:10px">
+            @Html.ActionLink("View Leaderboard", "Leaderboard", "Game", null, new { @class = "game-btn" })
         </p>
     </div>
 

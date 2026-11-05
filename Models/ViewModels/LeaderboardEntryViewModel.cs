@@ -7,5 +7,7 @@ namespace ClimateGSR.Models.ViewModels
         public int HighScore { get; set; }
         public int GamesPlayed { get; set; }
         public bool IsCurrentPlayer { get; set; }
+
+        public int AllTimeScore { get; set; }
     }
 }

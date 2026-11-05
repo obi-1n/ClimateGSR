@@ -1,12 +1,25 @@
-﻿@model System.Web.Mvc.HandleErrorInfo
+@model System.Web.Mvc.HandleErrorInfo
 
 @{
     ViewBag.Title = "Locked Out";
 }
 
-<main>
-    <hgroup>
-        <h1 class="text-danger">Locked out.</h1>
-        <h2 class="text-danger">This account has been locked out, please try again later.</h2>
-    </hgroup>
+<main class="login-page" aria-labelledby="title">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card login-card" style="border-color: rgba(239, 68, 68, 0.3);">
+                    <div class="login-card-top-bar" style="background: linear-gradient(90deg, #991b1b 0%, #dc2626 50%, #f87171 100%);"></div>
+                    <div class="card-body text-center">
+                        <h2 class="login-title" id="title" style="color: #991b1b;">Locked out</h2>
+                        <p class="login-subtitle" style="color: #b91c1c;">This account has been locked out, please try again later.</p>
+
+                        <div class="login-register-box">
+                            <p>@Html.ActionLink("Return to the home page", "Index", "Home", null, new { @class = "login-link" })</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>

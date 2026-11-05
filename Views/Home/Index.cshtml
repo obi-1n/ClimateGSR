@@ -16,24 +16,26 @@
     #map {
         flex: 1 1 65%;
         height: 600px;
-        background-color: #d4e6f1; /* background colour */
-        border: 2px solid #2c3e50;
-        border-radius: 8px;
+        background-color: #d4e6f1; /* ocean colour */
+        border: 2px solid #2d6a4f;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -8px rgba(27, 67, 50, 0.25);
     }
 
     .stats-panel {
         flex: 1 1 30%;
         min-width: 280px;
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid rgba(82, 183, 136, 0.35);
+        border-radius: 16px;
         padding: 20px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        box-shadow: 0 10px 25px -8px rgba(27, 67, 50, 0.18);
     }
 
         .stats-panel h3 {
             margin-top: 0;
-            border-bottom: 2px solid #2c3e50;
+            border-bottom: 2px solid #52b788;
+            color: #1b4332;
             padding-bottom: 10px;
         }
 
@@ -44,13 +46,15 @@
 
     .stat-label {
         font-weight: bold;
-        color: #555;
+        color: #2d6a4f;
     }
 </style>
 
 <div class="container-fluid">
-    <h2>Climate Awareness Geo-Explorer</h2>
-    <p>Hover over an outlined country and click to inspect its climate and demographic statistics.</p>
+    <div class="home-hero">
+        <h2>Climate Awareness Geo-Explorer</h2>
+        <p>Hover over an outlined country and click to inspect its climate and demographic statistics.</p>
+    </div>
 
     <div class="game-container">
         <!--inteactive map container-->
@@ -84,7 +88,6 @@
         //track currently selected country and json layer
         let selectedLayer = null;
         let climateDataMap = {};
-        let climateDataByCode = {};
 
         //common country names that might not match csv data and json outlines
         const nameAliases = {
@@ -100,9 +103,9 @@
 
         // define the default, hover, and selected styles for countries
         const defaultStyle = {
-            color: "#2c3e50",       //Outline colour
+            color: "#2d6a4f",       //Outline colour
             weight: 1.5,            //Outline thickness
-            fillColor: "#ffffff",   //Default unclicked fill
+            fillColor: "#f1f8f4",   //Default unclicked fill
             fillOpacity: 0.7
         };
 
@@ -115,25 +118,21 @@
         };
 
         const hoverStyle = {
-            color: "#2c3e50",
+            color: "#2d6a4f",
             weight: 2,
-            fillColor: "#808080",   //Grey on hover
+            fillColor: "#95d5b2",   //Light green on hover
             fillOpacity: 0.85
         };
 
         const selectedStyle = {
-            color: "#1a252f",
+            color: "#1b4332",
             weight: 2.5,
-            fillColor: "#808080",   //Remains coloured once clicked
+            fillColor: "#52b788",   //Remains green once clicked
             fillOpacity: 0.9
         };
 
         //helper function to retrieve country stats from the climateDataMap, considering aliases
-        function getCountryStats(feature) {
-            const properties = feature.properties;
-            const code = properties['ISO3166-1-Alpha-3'] || properties.ISO_A3;
-            if (code && climateDataByCode[code]) return climateDataByCode[code];
-            const geoName = properties.ADMIN || properties.name;
+        function getCountryStats(geoName) {
             if (!geoName) return null;
             const key = geoName.toLowerCase();
             if (climateDataMap[key]) return climateDataMap[key];
@@ -147,14 +146,10 @@
 
         //fetch csv data from the server and then fetch the GeoJSON polygons for countries
         fetch('@Url.Action("GetClimateData", "Home")')
-            .then(response => {
-                if (!response.ok) throw new Error('Climate data request failed.');
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 //store csv data in a map for quick access by country name
                 data.forEach(item => {
-                    if (item.IsoCode) climateDataByCode[item.IsoCode] = item;
                     if (item.Country)
                     {
                         climateDataMap[item.Country.trim().toLowerCase()] = item;
@@ -164,19 +159,18 @@
                 //fetch the GeoJSON data for countries from the GitHub repository
                 return fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
             })
-            .then(response => {
-                if (!response.ok) throw new Error('Country outlines request failed.');
-                return response.json();
-            })
+            .then(response => response.json())
             .then(geoData => {
-                const geoJsonLayer = L.geoJson(geoData, {
+                geoJsonLayer = L.geoJson(geoData, {
                     style: function (feature) {
-                        const hasData = getCountryStats(feature) !== null;
+                        const countryName = feature.properties.ADMIN || feature.properties.name;
+                        const hasData = getCountryStats(countryName) !== null;
                         //only outline countries that are within the csv data, others are greyed out
                         return hasData ? defaultStyle : inactiveCountryStyle;
                     },
                     onEachFeature: function (feature, layer) {
-                        const countryStats = getCountryStats(feature);
+                        const countryName = feature.properties.ADMIN || feature.properties.name;
+                        const countryStats = getCountryStats(countryName);
 
                         //only attach hover and click events to countries in the CSV files
                         if (countryStats) {
@@ -202,7 +196,7 @@
                                     selectedLayer.setStyle(defaultStyle);
                                 }
 
-                                // 2. Mark the clicked country as selected and colour it grey
+                                // 2. Mark the clicked country as selected and colour it green
                                 layer.isSelected = true;
                                 selectedLayer = layer;
                                 layer.setStyle(selectedStyle);
@@ -214,10 +208,7 @@
                     }
                 }).addTo(map);
             })
-            .catch(err => {
-                console.error("Error loading map or climate data:", err);
-                document.getElementById('stat-content').textContent = 'The map could not be loaded. Please refresh to try again.';
-            });
+            .catch(err => console.error("Error loading map or climate data:", err));
 
         //update the UI with the selected country's CSV stats
         function updateStatsPanel(stats) {
