@@ -14,13 +14,8 @@ namespace ClimateGSR.Models
     //Builds quiz questions from the Countries table. Each question has an
     //emissions prompt (shown at the start), the answer (the country's name),
     //and a shuffled list of hints about the country.
-    public class QuestionGenerator
-    {
-        // Countries below this population are never chosen - makes questions guessable
-    /// <summary>
-    /// Service responsible for selecting random countries from the database and generating
-    /// guessing-game questions with formatted hints and climate prompts.
-    /// </summary>
+    // Countries below this population are never chosen - makes questions guessable
+
     public class QuestionGenerator
     {
         /// <summary>
@@ -36,11 +31,6 @@ namespace ClimateGSR.Models
         private static readonly object RngLock = new object(); //thread safety
 
         //Randomly reorders a list in place
-
-        /// <summary>
-        /// Synchronization lock object to ensure thread-safe operations on the shared Random instance.
-        /// </summary>
-        private static readonly object RngLock = new object();
 
         /// <summary>
         /// Performs an in-place Fisher-Yates shuffle on the given list in a thread-safe manner.
